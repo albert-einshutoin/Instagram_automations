@@ -104,14 +104,14 @@ class InstagramApi(object):
         tags = self.collect_tags()
         with conn:
             for i in range(len(tags)):
-                conn.execute(f'INSERT INTO api_results VALUES'
-                             '({self.researched_time},'
-                             '{self.follower},'
-                             '{self.data[i]["id"]},'
-                             '{self.data[i]["like_count"]},'
-                             '{self.data[i]["caption"]},'
-                             '{self.data[i]["timestamp"]},'
-                             '{tags[i])}')
+                conn.execute(f'INSERT INTO api_results VALUES\
+                             ({self.researched_time},\
+                             {self.follower},\
+                             {self.data[i]["id"]},\
+                             {self.data[i]["like_count"]},\
+                             {self.data[i]["caption"]},\
+                             {self.data[i]["timestamp"]},\
+                             {tags[i])}')
 
 #     def read_db_info(self):
 #         """
