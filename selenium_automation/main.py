@@ -16,15 +16,15 @@ import logging
 import settings as st
 
 
-class Scraping:
+class Scraping(object):
 
-    def __init__(self, username, password, target=None):
+    def __init__(self, target=None):
         """
         """
         self.driver = webdriver.Chrome(ChromeDriverManager().install())
 
-        self.username = username
-        self.password = password
+        self.username = st.username
+        self.password = st.password
         self.randomtime = random.randint(2, 7)
         self.target = target
 
@@ -62,7 +62,7 @@ class Scraping:
         Notify.click()
         sleep(3)
 
-    def get_name_list(self, switch=2: int):
+    def get_name_list(self, switch=2):
         """Go profile and click follow or followers section
         Args:
             switch (int): [2]followers, [3]following
@@ -81,21 +81,11 @@ class Scraping:
         names.click()
         self._get_names()
 
-    def get_who_liked(self):
-        """get a list of people who liked targeted account's post
-        Args:
-
-        Returns:
-            list: instagram account names -> function<_get_names>
-        """
-        sleep(1)
-        self.driver.get(f"https://www.instagram.com/{self.target}/")
-        sleep(2)
-        pictures = self.wait_for_objects(By.CSS_SELECTOR, '._9AhH0')
-        pictures[0].click()
-
-    def _get_names(self):
+    def _get_names(self, num=5):
         """Loading list and get names
+        Args:
+            num (int): [5] person's follow or follower
+                       [7] people who liked specified post
         Returns:
             list: instagram account names
         """
@@ -114,10 +104,11 @@ class Scraping:
         names = [name.text for name in links if name != '']
         # close button
         self.driver.find_element(
-             By.XPATH, '/html/body/div[5]/div/div/div[1]/div/div[2]/button')
+             By.XPATH, f'/html/body/div[{num}]/div/div/\
+                       div[1]/div/div[2]/button')
         return names
 
-    def like_posts(self, keyword=None: str, max_like=2: int, switch=6: int, get_name=False: bool):
+    def like_posts(self, keyword=None, max_like=2, switch=6, get_name=False):
         """Like posts on searched hashtag or specified person
         Args:
             keyword (str): add hashtag or targeted accout name
@@ -126,7 +117,7 @@ class Scraping:
             get_name (bool): True -> get a list of people who liked post
                              False -> Not activated get_name work
         Returns:
-            None
+           get_name [active]: name list
         """
         sleep(2)
         if switch == 5:
@@ -142,6 +133,14 @@ class Scraping:
 
         for i in range(int(max_like)):
             sleep(3)
+            if get_name is True:
+                who_liked = self.driver.find_element(
+                                 By.XPATH, '/html/body/div[6]/div[3]/div/\
+                                 article/div/div[2]/div/div/div[2]/section[2]/\
+                                 div/div/div/a[2]')
+                who_liked.click()
+                self._get_names(num=7)
+
             likes = self.driver.find_element(
                          By.XPATH, f'/html/body/div[{switch}]/div[3]/div/\
                          article/div/div[2]/div/div/div[2]/section[1]/\
@@ -160,7 +159,7 @@ class Scraping:
 
             sleep(self.randomtime)
 
-    def like_timeline(self, max_like=1):
+    def like_timeline(self, max_like: int = 1):
         """Like posts on timeline
         Args:
             max_like (int): number of times to like posts (start from 1)
@@ -182,8 +181,8 @@ class Scraping:
 
     class Main(Scraping):
 
-        def __init__(self):
-            super.__init__()
+        def __init__(self, target=None):
+            super().__init__(target=None)
 
         def looping_hashtag_like(self, like_num: int):
             """keep liking hashtag from hashtags list
@@ -204,3 +203,11 @@ class Scraping:
                 for account in st.ACCOUNT_LIST:
                     self.like_posts(keyword=account, max_like=like, switch=5)
                 flag = False
+
+        def get_follow_names(self):
+            self.login()
+            self.get_follow_names(swtich=2)
+
+
+main = Main(target="fortesthics")
+main.get_follow_names()
