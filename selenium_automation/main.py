@@ -76,15 +76,15 @@ class Scraping(object):
 #        acc_info = self.driver.find_elements(By.CSS_SELECTOR, 'span.g47SY')
 
         names = self.driver.find_element(
-                         By.XPATH, f'//*[id="react-root"]/section/main/div/\
-                         header/section/ul/li[{switch}]/a')
+                         By.XPATH, '//*[@id="react-root"]/section/main/div/'
+                         f'header/section/ul/li[{switch}]/a')
         names.click()
         self._get_names()
 
-    def _get_names(self, num=5):
+    def _get_names(self, num: int = 6):
         """Loading list and get names
         Args:
-            num (int): [5] person's follow or follower
+            num (int): [6] person's follow or follower
                        [7] people who liked specified post
         Returns:
             list: instagram account names
@@ -92,7 +92,7 @@ class Scraping(object):
         sleep(1)
         last_ht, ht = 0, 1
         ppl_box = self.driver.find_element(
-                       By.XPATH, '/html/body/div[5]/div/div/div[2]')
+                       By.XPATH, '/html/body/div[6]/div/div/div/div[2]')
         while last_ht != ht:
             last_ht = ht
             sleep(2)
@@ -104,8 +104,8 @@ class Scraping(object):
         names = [name.text for name in links if name != '']
         # close button
         self.driver.find_element(
-             By.XPATH, f'/html/body/div[{num}]/div/div/\
-                       div[1]/div/div[2]/button')
+             By.XPATH, '/html/body/div[{num}]/div/div/div/'
+                       'div[1]/div/div[2]/button')
         return names
 
     def like_posts(self, keyword=None, max_like=2, switch=6, get_name=False):
@@ -179,35 +179,36 @@ class Scraping(object):
             like.click()
             sleep(0.5*self.randomtime)
 
-    class Main(Scraping):
 
-        def __init__(self, target=None):
-            super().__init__(target=None)
+class Main(Scraping):
 
-        def looping_hashtag_like(self, like_num: int):
-            """keep liking hashtag from hashtags list
-            """
-            flag = True
-            while flag:
-                self.login()
-                for hashtag in st.HASHTAG_LIST:
-                    self.like_posts(keyword=hashtag, max_like=like, switch=6)
-                flag = False
+    def __init__(self, target=None):
+        super().__init__(target="fortesthetics")
 
-        def looping_account_like(self, like_num: int):
-            """
-            """
-            flag = True
-            while flag:
-                self.login()
-                for account in st.ACCOUNT_LIST:
-                    self.like_posts(keyword=account, max_like=like, switch=5)
-                flag = False
-
-        def get_follow_names(self):
+    def looping_hashtag_like(self, like_num: int):
+        """keep liking hashtag from hashtags list
+        """
+        flag = True
+        while flag:
             self.login()
-            self.get_follow_names(swtich=2)
+            for hashtag in st.HASHTAG_LIST:
+                self.like_posts(keyword=hashtag, max_like=like, switch=6)
+            flag = False
+
+    def looping_account_like(self, like_num: int):
+        """
+        """
+        flag = True
+        while flag:
+            self.login()
+            for account in st.ACCOUNT_LIST:
+                self.like_posts(keyword=account, max_like=like, switch=5)
+            flag = False
+
+    def get_follow_names(self):
+        self.login()
+        self.get_name_list()
 
 
-main = Main(target="fortesthics")
+main = Main()
 main.get_follow_names()
