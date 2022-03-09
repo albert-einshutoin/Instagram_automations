@@ -43,7 +43,7 @@ class Scraping(object):
         """Login to instagram account
         """
         self.driver.get("https://www.instagram.com")
-        sleep(2)
+        sleep(3)
 
         # writting login info
         self.driver.find_element(By.XPATH, "//input[@name=\"username\"]")\
@@ -79,13 +79,16 @@ class Scraping(object):
                          By.XPATH, '//*[@id="react-root"]/section/main/div/'
                          f'header/section/ul/li[{switch}]/a')
         names.click()
-        self._get_names()
+        name_list = self._get_names()
+        return name_list
 
     def _get_names(self, num: int = 6):
         """Loading list and get names
         Args:
-            num (int): [6] person's follow or follower
-                       [7] people who liked specified post
+            num (int): [6] person's follow list
+                            [exc.] if you need following, you need to change
+                                    ppl_box -> ~~ div/div/div/div[3]
+                       [7] list of people who liked a particular post
         Returns:
             list: instagram account names
         """
@@ -104,7 +107,7 @@ class Scraping(object):
         names = [name.text for name in links if name != '']
         # close button
         self.driver.find_element(
-             By.XPATH, '/html/body/div[{num}]/div/div/div/'
+             By.XPATH, f'/html/body/div[{num}]/div/div/div/'
                        'div[1]/div/div[2]/button')
         return names
 
@@ -182,8 +185,8 @@ class Scraping(object):
 
 class Main(Scraping):
 
-    def __init__(self, target=None):
-        super().__init__(target="fortesthetics")
+    def __init__(self, target):
+        super().__init__(target=target)
 
     def looping_hashtag_like(self, like_num: int):
         """keep liking hashtag from hashtags list
@@ -207,8 +210,10 @@ class Main(Scraping):
 
     def get_follow_names(self):
         self.login()
-        self.get_name_list()
+        names = self.get_name_list()
+        print(names)
 
 
-main = Main()
+# fortesthetics
+main = Main(target="10th_nov_96")
 main.get_follow_names()

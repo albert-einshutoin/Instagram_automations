@@ -9,6 +9,8 @@ import time as t
 
 import settings as st
 
+import pandas as pd
+
 
 class InstagramApi(object):
 
