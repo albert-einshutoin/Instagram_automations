@@ -7,7 +7,9 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver import ActionChains
 
+import os
 from time import sleep
+import time
 import random
 import csv
 import datetime
@@ -38,6 +40,24 @@ class Scraping(object):
     def wait_for_objects(self, type, string):
         return WebDriverWait(self.driver, 3)\
                 .until(ec.presence_of_all_elements_located((type, string)))
+
+    def save_data_to_csv(self, data: str, file_name: str):
+        """function for saving data to csv
+        Args:
+            data (str): data returned from function
+            file_name (str): file_name
+        """
+        # particular file exits or not: True[not adding] False[add header]
+        if os.path.exists(f'{}.csv'):
+            flag = False
+        else:
+            flag = True
+        df = pd.DataFrame = ([
+                [data]
+                ],
+                columns=[f'']
+                )
+        df.to_csv(f'{file_name}_result.csv', mode="a", index=False, header=flag)
 
     def login(self):
         """Login to instagram account
@@ -98,17 +118,20 @@ class Scraping(object):
                        By.XPATH, '/html/body/div[6]/div/div/div/div[2]')
         while last_ht != ht:
             last_ht = ht
-            sleep(2)
+            sleep(3)
             ht = self.driver.execute_script("""
                     arguments[0].scrollTo(0, arguments[0].scrollHeight);
                     return arguments[0].scrollHeight;
                     """, ppl_box)
         links = ppl_box.find_elements(By.TAG_NAME, 'a')
-        names = [name.text for name in links if name != '']
+        origin_names = [name.text for name in links if name != '']
+        # ↑でif name != ''をしても''が入るため別で作業して''削除
+        names = [name for name in origin_names if name != '']
         # close button
-        self.driver.find_element(
-             By.XPATH, f'/html/body/div[{num}]/div/div/div/'
-                       'div[1]/div/div[2]/button')
+        close = self.driver.find_element(
+                By.XPATH, f'/html/body/div[{num}]/div/div/div/'
+                          'div[1]/div/div[2]/button')
+        close.click()
         return names
 
     def like_posts(self, keyword=None, max_like=2, switch=6, get_name=False):
@@ -142,7 +165,8 @@ class Scraping(object):
                                  article/div/div[2]/div/div/div[2]/section[2]/\
                                  div/div/div/a[2]')
                 who_liked.click()
-                self._get_names(num=7)
+                name_list = self._get_names(num=7)
+                self.save_data_to_csv(name_list, file_name="")
 
             likes = self.driver.find_element(
                          By.XPATH, f'/html/body/div[{switch}]/div[3]/div/\
@@ -203,17 +227,25 @@ class Main(Scraping):
         """
         flag = True
         while flag:
-            self.login()
             for account in st.ACCOUNT_LIST:
                 self.like_posts(keyword=account, max_like=like, switch=5)
             flag = False
 
     def get_follow_names(self):
-        self.login()
+        t1 = time.time()
         names = self.get_name_list()
-        print(names)
+        self.save_data_to_csv(data=names, file_name=f"{self.target}_follower")
+        print(len(names))
+        t2 = time.time()
+        print(f"end: {t2 - t1}")
+
+    # like post and get who liked targeted person
+    def like_post_get_who_liked_post(self):
+        for account in st.ACCOUNT_LIST:
+            self.like_posts(keyword=account, max_like=max_like, switch=6, get_name=True)
 
 
 # fortesthetics
-main = Main(target="10th_nov_96")
+main = Main(target="smasell_jp")
+main.login()
 main.get_follow_names()

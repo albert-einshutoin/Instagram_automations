@@ -1,2 +1,3 @@
 instagram_api/settings.py
 selenium_automation/settings.py
+*.csv
