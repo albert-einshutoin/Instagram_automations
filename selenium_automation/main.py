@@ -48,15 +48,15 @@ class Scraping(object):
             file_name (str): file_name
         """
         # particular file exits or not: True[not adding] False[add header]
-        if os.path.exists(f'{}.csv'):
+        if os.path.exists(f'{file_name}_result.csv'):
             flag = False
         else:
             flag = True
-        df = pd.DataFrame = ([
-                [data]
-                ],
-                columns=[f'']
-                )
+        df = pd.DataFrame([
+            [data]
+            ],
+            columns=['data']
+            )
         df.to_csv(f'{file_name}_result.csv', mode="a", index=False, header=flag)
 
     def login(self):
@@ -82,7 +82,7 @@ class Scraping(object):
         Notify.click()
         sleep(3)
 
-    def get_name_list(self, switch=2):
+    def get_name_list(self, switch=2, num=6):
         """Go profile and click follow or followers section
         Args:
             switch (int): [2]followers, [3]following
@@ -99,23 +99,33 @@ class Scraping(object):
                          By.XPATH, '//*[@id="react-root"]/section/main/div/'
                          f'header/section/ul/li[{switch}]/a')
         names.click()
-        name_list = self._get_names()
+        name_list = self._get_names(num=num)
         return name_list
 
-    def _get_names(self, num: int = 6):
+    def _get_names(self, num: int = 6, post=False):
         """Loading list and get names
         Args:
             num (int): [6] person's follow list
                             [exc.] if you need following, you need to change
                                     ppl_box -> ~~ div/div/div/div[3]
                        [7] list of people who liked a particular post
+            post (bool): False->name list for post
+                         True->name list for follow or follower
         Returns:
             list: instagram account names
         """
         sleep(1)
-        last_ht, ht = 0, 1
+        if post is True:
+            path = '/html/body/div[7]/div/div/div[2]'
+            close_button = f'/html/body/div[{num}]/div/div/div[1]/div/div[2]/'
+            'button/div'
+        elif post is False:
+            path = '/html/body/div[6]/div/div/div/div[2]'
+            close_button = f'/html/body/div[{num}]/div/div/div/div[1]/div/'
+            'div[2]/button'
         ppl_box = self.driver.find_element(
-                       By.XPATH, '/html/body/div[6]/div/div/div/div[2]')
+                       By.XPATH, f'{path}')
+        last_ht, ht = 0, 1
         while last_ht != ht:
             last_ht = ht
             sleep(3)
@@ -129,19 +139,21 @@ class Scraping(object):
         names = [name for name in origin_names if name != '']
         # close button
         close = self.driver.find_element(
-                By.XPATH, f'/html/body/div[{num}]/div/div/div/'
-                          'div[1]/div/div[2]/button')
+                By.XPATH, f'{close_button}')
         close.click()
         return names
 
-    def like_posts(self, keyword=None, max_like=2, switch=6, get_name=False):
+    def like_posts(self, keyword=None, max_like=2, switch=6, get_name=False, like_post=False):
         """Like posts on searched hashtag or specified person
         Args:
             keyword (str): add hashtag or targeted accout name
             max_like (int): number of times to like posts for each keyword
-            switch (int): [5]specified person, [6]hashtags
+            switch (int): [5]specified searched person
+                          [6]hashtags
             get_name (bool): True -> get a list of people who liked post
                              False -> Not activated get_name work
+            like_post (bool): True -> like post
+                              False -> skip liking operation
         Returns:
            get_name [active]: name list
         """
@@ -159,23 +171,25 @@ class Scraping(object):
 
         for i in range(int(max_like)):
             sleep(3)
+            # if get_name is True save who liked post
             if get_name is True:
                 who_liked = self.driver.find_element(
-                                 By.XPATH, '/html/body/div[6]/div[3]/div/\
-                                 article/div/div[2]/div/div/div[2]/section[2]/\
-                                 div/div/div/a[2]')
+                                 By.XPATH, '/html/body/div[6]/div[3]/div/'
+                                 'article/div/div[2]/div/div/div[2]/section[2]/'
+                                 'div/div/div/a')
                 who_liked.click()
-                name_list = self._get_names(num=7)
-                self.save_data_to_csv(name_list, file_name="")
+                name_list = self._get_names(num=7, post=True)
+                self.save_data_to_csv(name_list, file_name=f"{keyword}")
 
-            likes = self.driver.find_element(
-                         By.XPATH, f'/html/body/div[{switch}]/div[3]/div/\
-                         article/div/div[2]/div/div/div[2]/section[1]/\
-                         span[1]/button')
-            likes.click()
+            if like_post is True:
+                likes = self.driver.find_element(
+                             By.XPATH, f'/html/body/div[{switch}]/div[3]/div/'
+                             'article/div/div[2]/div/div/div[2]/section[1]/'
+                             'span[1]/button')
+                likes.click()
 
             sleep(3)
-            # need to change xpath after first post
+            # change xpath after first post to go next post
             if i == 0:
                 source = f'/html/body/div[{switch}]/div[2]/div/div/button'
             else:
@@ -185,6 +199,21 @@ class Scraping(object):
             next_window.click()
 
             sleep(self.randomtime)
+
+    def looping_searched_posts(func):
+
+        def main_operation(self, keyword=None, maxlike=2, switch=6):
+            sleep(2)
+            if switch == 5:
+                self.driver.get(f"https://www.instagram.com/{keyword}/")
+            elif switch == 6:
+                self.driver.get(
+                        f"https://www.instagram.com/explore/tags/{keyword}/")
+            sleep(2)
+            pictures = self.wait_for_objects(By.CSS_SELECTOR, '._9AhH0')
+            pictures[0].click()
+
+        return main_operation
 
     def like_timeline(self, max_like: int = 1):
         """Like posts on timeline
@@ -232,15 +261,17 @@ class Main(Scraping):
             flag = False
 
     def get_follow_names(self):
-        t1 = time.time()
         names = self.get_name_list()
         self.save_data_to_csv(data=names, file_name=f"{self.target}_follower")
         print(len(names))
-        t2 = time.time()
         print(f"end: {t2 - t1}")
 
+    def like_post(self, max_like):
+        for hashtag in st.HASHTAG_LIST:
+            self.like_posts(keyword=hashtag, max_like=max_like, switch=6, get_name=False, like_post=True)
+
     # like post and get who liked targeted person
-    def like_post_get_who_liked_post(self):
+    def like_post_get_who_liked_post(self, max_like):
         for account in st.ACCOUNT_LIST:
             self.like_posts(keyword=account, max_like=max_like, switch=6, get_name=True)
 
@@ -248,4 +279,4 @@ class Main(Scraping):
 # fortesthetics
 main = Main(target="smasell_jp")
 main.login()
-main.get_follow_names()
+main.like_posts(keyword="smasell_jp", max_like=5, switch=5, get_name=True, like_post=False)
