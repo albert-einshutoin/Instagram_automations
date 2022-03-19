@@ -1,3 +1,4 @@
+import pandas as pd
 from selenium import webdriver
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.support.ui import WebDriverWait
@@ -41,23 +42,14 @@ class Scraping(object):
         return WebDriverWait(self.driver, 3)\
                 .until(ec.presence_of_all_elements_located((type, string)))
 
-    def save_data_to_csv(self, data: str, file_name: str):
+    def save_data_to_csv(self, data: list, file_name: str):
         """function for saving data to csv
         Args:
             data (str): data returned from function
             file_name (str): file_name
         """
-        # particular file exits or not: True[not adding] False[add header]
-        if os.path.exists(f'{file_name}_result.csv'):
-            flag = False
-        else:
-            flag = True
-        df = pd.DataFrame([
-            [data]
-            ],
-            columns=['data']
-            )
-        df.to_csv(f'{file_name}_result.csv', mode="a", index=False, header=flag)
+        df = pd.DataFrame(data, columns=['data'])
+        df.to_csv(f'{file_name}_result.csv', index=False)
 
     def login(self):
         """Login to instagram account
@@ -82,11 +74,13 @@ class Scraping(object):
         Notify.click()
         sleep(3)
 
-    def get_name_list(self, switch=2, num=6):
+    def get_name_list(self, switch=2, post=False, flag=False):
         """Go profile and click follow or followers section
         Args:
             switch (int): [2]followers, [3]following
-
+            num (int): refer to _get_names function
+                       [6] person's follow list
+                       [7] list of people who liked a particular post
         Returns:
             list: instagram account names -> function<_get_names>
         """
@@ -99,40 +93,41 @@ class Scraping(object):
                          By.XPATH, '//*[@id="react-root"]/section/main/div/'
                          f'header/section/ul/li[{switch}]/a')
         names.click()
-        name_list = self._get_names(num=num)
+        name_list = self._get_names(post=post, flag=flag)
+        self.save_data_to_csv(data=name_list, file_name=f'{self.target}')
         return name_list
 
-    def _get_names(self, num: int = 6, post=False):
+    def _get_names(self, post=False, flag=False):
         """Loading list and get names
         Args:
-            num (int): [6] person's follow list
-                            [exc.] if you need following, you need to change
-                                    ppl_box -> ~~ div/div/div/div[3]
-                       [7] list of people who liked a particular post
-            post (bool): False->name list for post
-                         True->name list for follow or follower
+            post (bool): True->name list of people who liked post
+                         False->name list of following or follower
+            flag (bool): True->follower list
+                         Flase->following list
         Returns:
             list: instagram account names
         """
         sleep(1)
         if post is True:
-            path = '/html/body/div[7]/div/div/div[2]'
-            close_button = f'/html/body/div[{num}]/div/div/div[1]/div/div[2]/'
-            'button/div'
-        elif post is False:
+            path = '/html/body/div[7]/div/div/div[2]/div/div'
+            close_button = f'/html/body/div[7]/div/div/div[1]/div/div[3]/div/button'
+        elif post is False and flag is True:
+            java = """arguments[0].scrollTo(0, arguments[0].scrollHeight);
+                    return arguments[0].scrollHeight;"""
+            path = '/html/body/div[4]/div/div/div/div[2]'
+            close_button = f'/html/body/div[6]/div/div/div/div[1]/div/div[3]/div/button'
+        elif post is False and flag is False:
+            java = """arguments[0].scrollTo(0, arguments[0].scrollHeight);
+                    return arguments[0].scrollHeight;"""
             path = '/html/body/div[6]/div/div/div/div[2]'
-            close_button = f'/html/body/div[{num}]/div/div/div/div[1]/div/'
-            'div[2]/button'
+            close_button = f'/html/body/div[6]/div/div/div/div[1]/div/div[3]/div/button'
         ppl_box = self.driver.find_element(
                        By.XPATH, f'{path}')
         last_ht, ht = 0, 1
         while last_ht != ht:
             last_ht = ht
             sleep(3)
-            ht = self.driver.execute_script("""
-                    arguments[0].scrollTo(0, arguments[0].scrollHeight);
-                    return arguments[0].scrollHeight;
-                    """, ppl_box)
+            ht = self.driver.execute_script(java, ppl_box)
         links = ppl_box.find_elements(By.TAG_NAME, 'a')
         origin_names = [name.text for name in links if name != '']
         # ↑でif name != ''をしても''が入るため別で作業して''削除
@@ -143,13 +138,13 @@ class Scraping(object):
         close.click()
         return names
 
-    def like_posts(self, keyword=None, max_like=2, switch=6, get_name=False, like_post=False):
-        """Like posts on searched hashtag or specified person
+    def check_posts(self, keyword=None, max_loop=2, switch=6, get_name=False, like_post=False):
+        """seeing posts on searched hashtag or specified person
         Args:
             keyword (str): add hashtag or targeted accout name
-            max_like (int): number of times to like posts for each keyword
-            switch (int): [5]specified searched person
-                          [6]hashtags
+            max_loop(int): number of times to loop posts for each keyword
+            switch (int): [6]specified searched person
+                          [7]hashtags
             get_name (bool): True -> get a list of people who liked post
                              False -> Not activated get_name work
             like_post (bool): True -> like post
@@ -158,18 +153,16 @@ class Scraping(object):
            get_name [active]: name list
         """
         sleep(2)
-        if switch == 5:
+        if switch == 6:
             self.driver.get(f"https://www.instagram.com/{keyword}/")
-        elif switch == 6:
+        elif switch == 7:
             self.driver.get(
                     f"https://www.instagram.com/explore/tags/{keyword}/")
-        else:
-            print("like_posts switch number is inccorect")
         sleep(2)
         pictures = self.wait_for_objects(By.CSS_SELECTOR, '._9AhH0')
         pictures[0].click()
 
-        for i in range(int(max_like)):
+        for i in range(int(max_loop)):
             sleep(3)
             # if get_name is True save who liked post
             if get_name is True:
@@ -178,8 +171,9 @@ class Scraping(object):
                                  'article/div/div[2]/div/div/div[2]/section[2]/'
                                  'div/div/div/a')
                 who_liked.click()
-                name_list = self._get_names(num=7, post=True)
-                self.save_data_to_csv(name_list, file_name=f"{keyword}")
+                name_list = self._get_names(post=True, flag=False)
+                count = str(i)
+                self.save_data_to_csv(name_list, file_name=f"{keyword + count}")
 
             if like_post is True:
                 likes = self.driver.find_element(
@@ -261,8 +255,11 @@ class Main(Scraping):
             flag = False
 
     def get_follow_names(self):
+        t1 = time.time()
         names = self.get_name_list()
-        self.save_data_to_csv(data=names, file_name=f"{self.target}_follower")
+        count = str(len(names))
+        self.save_data_to_csv(data=names, file_name=f"{self.target}_follower{count}_")
+        t2 = time.time()
         print(len(names))
         print(f"end: {t2 - t1}")
 
@@ -276,7 +273,9 @@ class Main(Scraping):
             self.like_posts(keyword=account, max_like=max_like, switch=6, get_name=True)
 
 
-# fortesthetics
-main = Main(target="smasell_jp")
+# fortesthetics ashuhari_clothes
+main = Main(target="ashuhari_clothes")
 main.login()
-main.like_posts(keyword="smasell_jp", max_like=5, switch=5, get_name=True, like_post=False)
+main.get_follow_names()
+# main.check_posts(keyword="smasell_jp", max_loop=3, switch=6, get_name=True, like_post=False)
+# main.check_posts(keyword="smasell_jp", max_like=5, switch=6, get_name=True, like_post=False)
