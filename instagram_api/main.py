@@ -51,8 +51,7 @@ class InstagramApi(object):
         return result
 
     def collect_tags(self):
-        """
-        return tags as list
+        """Return tags as list
         """
         lists = []
         pattern = '#.*?(.*?)\s'
@@ -62,26 +61,34 @@ class InstagramApi(object):
             # use flags to being active for mutiline text
             new_caption = re.sub('$', ' ', caption, flags=re.MULTILINE)
             tags_list = re.findall(pattern, new_caption, re.S)
-            lists.append(tag_list)
+            lists.append(tags_list)
         return lists
 
     def save_info_to_csv(self):
         """
         all data save into csv file
         """
-        tags = self.collect_tags()
-        for i in range(len(tags)):
+        for i in range(len(self.data)):
             df = pd.DataFrame([
                 [self.researched_time, self.follower, self.data[i]["id"],
                  self.data[i]["like_count"], self.data[i]["caption"],
-                 self.data[i]["timestamp"], tags[i]]
+                 self.data[i]["timestamp"]]
                 ],
                 columns=['Researched_time', 'Follower', 'Post_id',
                          'Like_count', 'Caption',
-                         'Posted_time', 'Tags']
+                         'Posted_time']
                 )
             df.to_csv(f'{self.target_account}_instagram_api_result.csv',
                       mode='a', index=False, header=False)
+
+    def save_tags_to_csv(self):
+        """
+        """
+        os.makedirs(data/{self.target}/tags)
+        tags = self.collect_tags()
+        for i in range(len(tags)):
+            df = pd.DataFrame(tags[i], columns=['tag'])
+            df.to_csv(f'{self.data[i]["id"]_tags}', index=False)
 
     def create_db_table(self):
         conn = sqlite3.connect(self.DATABASE)
@@ -104,16 +111,14 @@ class InstagramApi(object):
         todo: connect db first and make data None if the caption is duplicated
         """
         tags = self.collect_tags()
+        sql = f'INSERT INTO api_results VALUES({self.researched_time},\
+              {self.follower}, {self.data[i]["id"]},\
+              {self.data[i]["like_count"]}, {self.data[i]["caption"]},\
+              {self.data[i]["timestamp"]}, {tags[i]})'
+
         with conn:
             for i in range(len(tags)):
-                conn.execute(f'INSERT INTO api_results VALUES\
-                             ({self.researched_time},\
-                             {self.follower},\
-                             {self.data[i]["id"]},\
-                             {self.data[i]["like_count"]},\
-                             {self.data[i]["caption"]},\
-                             {self.data[i]["timestamp"]},\
-                             {tags[i])}')
+                conn.execute(sql)
 
 #     def read_db_info(self):
 #         """
@@ -143,12 +148,7 @@ class Main(InstagramApi):
             self.save_info_to_csv(searching_account=account)
 
 
-# Main().looping_accountlist(st.ACCOUNT_LIST)
-
-# print(st.ACCOUNT_LIST)
-
 insta = InstagramApi(searching_account="zozotown")
-result = insta.connect_api()
 
-for i, data in enumerate(insta.data):
-    print(int(insta.data[i]["like_count"]))
+# for i, data in enumerate(insta.data):
+#     print(int(insta.data[i]["like_count"]))

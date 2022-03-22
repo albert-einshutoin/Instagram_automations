@@ -8,6 +8,7 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver import ActionChains
 
+import datetime
 import os
 from time import sleep
 import time
@@ -21,7 +22,7 @@ import settings as st
 
 class Scraping(object):
 
-    def __init__(self, target=None):
+    def __init__(self):
         """
         """
         self.driver = webdriver.Chrome(ChromeDriverManager().install())
@@ -29,9 +30,8 @@ class Scraping(object):
         self.username = st.username
         self.password = st.password
         self.randomtime = random.randint(2, 7)
-        self.target = target
 
-        self.driver.delete_all_cookies()
+#        self.driver.delete_all_cookies()
         self.driver.maximize_window()
 
     def wait_for_object(self, type, string):
@@ -48,8 +48,12 @@ class Scraping(object):
             data (str): data returned from function
             file_name (str): file_name
         """
+        time = datetime.datetime.now()
+        m = time.month
+        d = time.day
+        h = time.hour
         df = pd.DataFrame(data, columns=['data'])
-        df.to_csv(f'{file_name}_result.csv', index=False)
+        df.to_csv(f'data/{file_name}_{m}m{d}d{h}h_result.csv', index=False)
 
     def login(self):
         """Login to instagram account
@@ -74,9 +78,10 @@ class Scraping(object):
         Notify.click()
         sleep(3)
 
-    def get_name_list(self, switch=2, post=False, flag=False):
+    def get_name_list(self, target=None, switch=2, post=False, flag=False):
         """Go profile and click follow or followers section
         Args:
+            target (str): target name
             switch (int): [2]followers, [3]following
             num (int): refer to _get_names function
                        [6] person's follow list
@@ -85,7 +90,7 @@ class Scraping(object):
             list: instagram account names -> function<_get_names>
         """
         sleep(1)
-        self.driver.get(f"https://www.instagram.com/{self.target}/")
+        self.driver.get(f"https://www.instagram.com/{target}/")
         sleep(2)
 #        acc_info = self.driver.find_elements(By.CSS_SELECTOR, 'span.g47SY')
 
@@ -94,7 +99,6 @@ class Scraping(object):
                          f'header/section/ul/li[{switch}]/a')
         names.click()
         name_list = self._get_names(post=post, flag=flag)
-        self.save_data_to_csv(data=name_list, file_name=f'{self.target}')
         return name_list
 
     def _get_names(self, post=False, flag=False):
@@ -108,17 +112,17 @@ class Scraping(object):
             list: instagram account names
         """
         sleep(1)
+        java = """arguments[0].scrollTo(0, arguments[0].scrollHeight);
+                return arguments[0].scrollHeight;"""
         if post is True:
+            java = """arguments[0].scrollTo(0, 715);
+                    return arguments[0].scrollHeight;"""
             path = '/html/body/div[7]/div/div/div[2]/div/div'
             close_button = f'/html/body/div[7]/div/div/div[1]/div/div[3]/div/button'
         elif post is False and flag is True:
-            java = """arguments[0].scrollTo(0, arguments[0].scrollHeight);
-                    return arguments[0].scrollHeight;"""
             path = '/html/body/div[4]/div/div/div/div[2]'
             close_button = f'/html/body/div[6]/div/div/div/div[1]/div/div[3]/div/button'
         elif post is False and flag is False:
-            java = """arguments[0].scrollTo(0, arguments[0].scrollHeight);
-                    return arguments[0].scrollHeight;"""
             path = '/html/body/div[6]/div/div/div/div[2]'
             close_button = f'/html/body/div[6]/div/div/div/div[1]/div/div[3]/div/button'
         ppl_box = self.driver.find_element(
@@ -232,9 +236,6 @@ class Scraping(object):
 
 class Main(Scraping):
 
-    def __init__(self, target):
-        super().__init__(target=target)
-
     def looping_hashtag_like(self, like_num: int):
         """keep liking hashtag from hashtags list
         """
@@ -254,11 +255,19 @@ class Main(Scraping):
                 self.like_posts(keyword=account, max_like=like, switch=5)
             flag = False
 
-    def get_follow_names(self):
+    def get_follower_names(self, target=None):
+        """[Main]Go profile and click follow or followers section
+        Args:
+            target (str): targeted account name
+        Returns:
+            csv file
+        """
+        path = f'data/{target}/follower'
+        os.makedirs(path, exist_ok=True)
         t1 = time.time()
-        names = self.get_name_list()
+        names = self.get_name_list(target=target)
         count = str(len(names))
-        self.save_data_to_csv(data=names, file_name=f"{self.target}_follower{count}_")
+        self.save_data_to_csv(data=names, file_name=f'{target}/follower/{count}')
         t2 = time.time()
         print(len(names))
         print(f"end: {t2 - t1}")
@@ -274,8 +283,7 @@ class Main(Scraping):
 
 
 # fortesthetics ashuhari_clothes
-main = Main(target="ashuhari_clothes")
+main = Main()
 main.login()
-main.get_follow_names()
+main.get_follower_names(target="10th_nov_96")
 # main.check_posts(keyword="smasell_jp", max_loop=3, switch=6, get_name=True, like_post=False)
-# main.check_posts(keyword="smasell_jp", max_like=5, switch=6, get_name=True, like_post=False)
