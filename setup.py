@@ -1,20 +1,12 @@
-try:
-    from setuptools import setup, find_packages
-except ImportError:
-    from distutils.core import setup
-
-
 setup(
     name='',
     version='0.0.1',
-    packages=['', '.Models', '.Controller', '.Views'],
-    # You could use find_packages if setuptools is installed. 
+    packages=['.instagram_api', '.selenium_automation'],
+    # You could use find_packages if setuptools is installed.
     # packages=find_packages(),
-    package_data={ 'roboter': ['templates/*.txt'] },
-    url='http://sakaijunsoccer.appspot.com',
     license='MIT',
-    author='jsakai',
-    author_email='example@example.com',
+    author='shuto',
+    author_email='einstein.4s.1110@gmail.com',
     # You can specify install_requires if setuptools is installed
     # install_requires=['termcolor==1.1.0'],
     long_description=open('README.txt').read(),
