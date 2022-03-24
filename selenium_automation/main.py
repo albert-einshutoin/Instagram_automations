@@ -111,6 +111,7 @@ class Scraping(object):
         Returns:
             list: instagram account names
         """
+        rt = random.randint(3, 5)
         sleep(1)
         java = """arguments[0].scrollTo(0, arguments[0].scrollHeight);
                 return arguments[0].scrollHeight;"""
@@ -128,9 +129,15 @@ class Scraping(object):
         ppl_box = self.driver.find_element(
                        By.XPATH, f'{path}')
         last_ht, ht = 0, 1
+        count = 0
         while last_ht != ht:
+            count += 1
             last_ht = ht
-            sleep(3)
+            sleep(rt)
+            ht = self.driver.execute_script(java, ppl_box)
+            sleep(0.1*rt)
+            if count % 3 == 0:
+                ht = self.driver.execute_script("""arguments[0].scrollTo(0, -10)""", ppl_box)
             ht = self.driver.execute_script(java, ppl_box)
         links = ppl_box.find_elements(By.TAG_NAME, 'a')
         origin_names = [name.text for name in links if name != '']
@@ -285,5 +292,5 @@ class Main(Scraping):
 # fortesthetics ashuhari_clothes
 main = Main()
 main.login()
-main.get_follower_names(target="10th_nov_96")
+main.get_follower_names(target="fortesthetics")
 # main.check_posts(keyword="smasell_jp", max_loop=3, switch=6, get_name=True, like_post=False)

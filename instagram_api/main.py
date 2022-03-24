@@ -12,14 +12,14 @@ import settings as st
 import pandas as pd
 
 
-class InstagramApi(object):
+class InstaDiscover(object):
 
-    def __init__(self, searching_account=None):
+    def __init__(self, target=None):
         """First, connect to api to get basic info
         """
-        self.target_account = str(searching_account)
+        self.target = str(searching_account)
         self.DATABASE = ':memory:'
-        result = self.connect_api()
+        result = self.connect_api(target=target)
         self.username = st.username
         self.password = st.password
         self.researched_time = t.strftime("%Y/%m/%d, %H:%M:%S")
@@ -30,28 +30,30 @@ class InstagramApi(object):
         self.data = self.medias_data["data"]
         self.list = []
 
-    def connect_api(self):
+    def connect_api(self, target=None):
         """Coonect api
         Args:
-
+            target (str): target account
         Returnes:
-            dictionary: api result
+            result (dictionary): api result
         """
         searching_list = "{follows_count,followers_count,media_count,media\
                          {comments_count,like_count,timestamp,id,caption}}"
         params = (
                 ('fields', 'business_discovery.username'
-                           f'({self.target_account}){searching_list}'),
+                           f'({target}){searching_list}'),
                 ('access_token', f'{st.ACCESS_TOKEN}'),
         )
         response = requests.get(
-            'https://graph.facebook.com/v12.0/17841428230862133/',
+            f'https://graph.facebook.com/v13.0/{st.ID}/',
             params=params)
         result = response.json()
         return result
 
     def collect_tags(self):
-        """Return tags as list
+        """split tag from post's caption
+        Returns:
+            lists (list): hashtag list for each post
         """
         lists = []
         pattern = '#.*?(.*?)\s'
@@ -64,9 +66,8 @@ class InstagramApi(object):
             lists.append(tags_list)
         return lists
 
-    def save_info_to_csv(self):
-        """
-        all data save into csv file
+    def save_info_to_csv(self, target=None):
+        """all data save into csv file except tags for coverting to list easily
         """
         for i in range(len(self.data)):
             df = pd.DataFrame([
@@ -78,17 +79,18 @@ class InstagramApi(object):
                          'Like_count', 'Caption',
                          'Posted_time']
                 )
-            df.to_csv(f'{self.target_account}_instagram_api_result.csv',
+            df.to_csv(f'{target}_instagram_api_result.csv',
                       mode='a', index=False, header=False)
 
-    def save_tags_to_csv(self):
+    def save_tags_to_csv(self, target=None):
+        """saving tags to csv
         """
-        """
-        os.makedirs(data/{self.target}/tags)
+        path = f'data/{target}/tags'
+        os.makedirs(path, exist_ok=True)
         tags = self.collect_tags()
         for i in range(len(tags)):
             df = pd.DataFrame(tags[i], columns=['tag'])
-            df.to_csv(f'{self.data[i]["id"]_tags}', index=False)
+            df.to_csv(f'{self.data[i]["id"]}_tags', index=False)
 
     def create_db_table(self):
         conn = sqlite3.connect(self.DATABASE)
@@ -126,18 +128,45 @@ class InstagramApi(object):
 #         """
 #         db = sqlite3.connect(self.DATABASE)
 #         c = db.cursor()
-#         sql = f'SELECT {self.data[i]["id"]} FROM {self.target_account + }'
+#         sql = f'SELECT {self.data[i]["id"]} FROM {target + }'
 #         c.execute(sql)
 #         db.close()
 
 
-class Main(InstagramApi):
+class InstaInsight(object):
+
+    def __init__(self):
+        """
+        """
+        self.username = st.username
+        self.password = st.password
+
+    def connect_api(self, purpose):
+        """Coonect api
+        Args:
+            target (str): target account
+        Returnes:
+            result (dictionary): api result
+        """
+        params = {
+            'metric': 'impressions,reach',
+            'period': 'days_28',
+            'access_token': f'{st.ACCESS_TOKEN}',
+        }
+
+        response = requests.get(
+                f'https://graph.facebook.com/v13.0/{st.ID}/insights',
+                params=params)
+        result = response.json()
+        return result
+
+
+class DiscoverMain(InstagramApi):
 
     def __init__(self):
         super.__init__()
-        self.list = st.ACCOUNT_LIST
 
-    def looping_accountlist(self, accounts):
+    def looping_accountlist(self, accounts=st.ACCOUNT_LIST: list):
         """looping main work to each account from account list(settings.py)
         Args:
             accounts: compatitor's instagram account list.
@@ -146,9 +175,36 @@ class Main(InstagramApi):
         """
         for account in accounts:
             self.save_info_to_csv(searching_account=account)
+            self.collect_tags()
 
 
-insta = InstagramApi(searching_account="zozotown")
+class InsightMain(InstaInsight):
+
+    def __init__(self):
+        """
+        """
+        super.__init__()
+
+    def audience_info(self, ditail=True, gender=False):
+        """get data of place where follower is
+        Args:
+            ditail (bool): True->get country and city
+                           False->get country
+        """
+        if ditail is True:
+            place = 'audience_country,audience_city'
+        elif ditail is False:
+            place 'audience_country'
+        purpose = {
+                'metric': f'{place}',
+                'period': 'lifetime',
+                'access_token': f'{st.ACCESS_TOKEN}',
+            }
+        self.connect_api(purpose=purpose)
+
+
+insta = InstaDiscover(searching_account="smasell_jp")
+print(insta.collect_tags())
 
 # for i, data in enumerate(insta.data):
 #     print(int(insta.data[i]["like_count"]))
