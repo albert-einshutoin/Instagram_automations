@@ -141,19 +141,14 @@ class InstaInsight(object):
         self.username = st.username
         self.password = st.password
 
-    def connect_api(self, purpose):
+    def connect_api(self, purpose=None):
         """Coonect api
         Args:
-            target (str): target account
+            purpose (dict): change params for the purpose
         Returnes:
             result (dictionary): api result
         """
-        params = {
-            'metric': 'impressions,reach',
-            'period': 'days_28',
-            'access_token': f'{st.ACCESS_TOKEN}',
-        }
-
+        params = purpose
         response = requests.get(
                 f'https://graph.facebook.com/v13.0/{st.ID}/insights',
                 params=params)
@@ -161,12 +156,12 @@ class InstaInsight(object):
         return result
 
 
-class DiscoverMain(InstagramApi):
+class DiscoverMain(InstaDiscover):
 
     def __init__(self):
         super.__init__()
 
-    def looping_accountlist(self, accounts=st.ACCOUNT_LIST: list):
+    def looping_accountlist(self, accounts: list = st.ACCOUNT_LIST):
         """looping main work to each account from account list(settings.py)
         Args:
             accounts: compatitor's instagram account list.
@@ -183,28 +178,44 @@ class InsightMain(InstaInsight):
     def __init__(self):
         """
         """
-        super.__init__()
 
-    def audience_info(self, ditail=True, gender=False):
-        """get data of place where follower is
-        Args:
-            ditail (bool): True->get country and city
-                           False->get country
+    def audience_info(self):
+        """get data of place where follower is and gender
         """
-        if ditail is True:
-            place = 'audience_country,audience_city'
-        elif ditail is False:
-            place 'audience_country'
         purpose = {
-                'metric': f'{place}',
+                'metric': 'audience_country,audience_city,audience_gender_age',
                 'period': 'lifetime',
                 'access_token': f'{st.ACCESS_TOKEN}',
             }
-        self.connect_api(purpose=purpose)
+        data = self.connect_api(purpose=purpose)
+        return data
+
+    def impression(self):
+        """get some data related to impressions
+        """
+        purpose = {
+                'metric': 'follower_count,get_directions_clicks,\
+                        profile_views,website_clicks',
+                'period': 'day',
+                'access_token': f'{st.ACCESS_TOKEN}',
+            }
+        data = self.connect_api(purpose=purpose)
+        print(data)
+        return data
+
+    def save_impression_data(self):
+        """save data to csv [impression()]
+        """
+        df = pd.DataFrame([
+            ],
+            columns=)
 
 
-insta = InstaDiscover(searching_account="smasell_jp")
-print(insta.collect_tags())
+# insta = InstaDiscover(searching_account="smasell_jp")
+# print(insta.collect_tags())
+
+insight = InsightMain()
+insight.impression()
 
 # for i, data in enumerate(insta.data):
 #     print(int(insta.data[i]["like_count"]))
