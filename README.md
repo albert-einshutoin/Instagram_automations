@@ -1,3 +1,29 @@
+# Instagram Automation & Marketing tool
+
+***this program might go against instagram user's guideline
+
+## Description
+
+## Demo
+
+## VS.
+
+## Requirement
+
+## Usage
+
+## Install
+
+## Contribution
+
+## Licence
+
+[MIT]()
+
+## Author
+
+[albert-einshutoin](https://github.com/albert-einshutoin)
+
 InstagramGraphAPIから取得できる情報をcsv/DBに保存
 
 
