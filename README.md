@@ -11,7 +11,7 @@ main action is collecting data from official API for your instagram marketing
 	useing Instagram Graph API
 	possible to get like count, follower/follow number, madia data and data related to impression about your account
 - selenium_automaiton
-	<text color="red">check follow instagram guideline</text>
+	:x::x:check follow instagram guideline:x::x:
 	you can like posts and get follower's list from targeted account
 ## VS.
 
