@@ -1,11 +1,18 @@
 # Instagram Automation & Marketing tool
 
-***this program might go against instagram user's guideline
+this might go against instagram user's guideline, so use this carefully with your responsibility
+
+## Overview
+this is a beasemet of instagram marketing tool, you can do some basic action with original code.
+main action is collecting data from official API for your instagram marketing
 
 ## Description
-
-## Demo
-
+- instagram_api
+	useing Instagram Graph API
+	possible to get like count, follower/follow number, madia data and data related to impression about your account
+- selenium_automaiton
+	<text color="red">check follow instagram guideline</text>
+	you can like posts and get follower's list from targeted account
 ## VS.
 
 ## Requirement
