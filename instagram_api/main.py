@@ -17,7 +17,7 @@ class InstaDiscover(object):
     def __init__(self, target=None):
         """First, connect to api to get basic info
         """
-        self.target = str(searching_account)
+        self.target = str(target)
         self.DATABASE = ':memory:'
         result = self.connect_api(target=target)
         self.username = st.username
@@ -158,9 +158,6 @@ class InstaInsight(object):
 
 class DiscoverMain(InstaDiscover):
 
-    def __init__(self):
-        super.__init__()
-
     def looping_accountlist(self, accounts: list = st.ACCOUNT_LIST):
         """looping main work to each account from account list(settings.py)
         Args:
@@ -169,6 +166,7 @@ class DiscoverMain(InstaDiscover):
             result data file for each researched account.
         """
         for account in accounts:
+            print(accout)
             self.save_info_to_csv(searching_account=account)
             self.collect_tags()
 
@@ -203,19 +201,19 @@ class InsightMain(InstaInsight):
         print(data)
         return data
 
-    def save_impression_data(self):
-        """save data to csv [impression()]
-        """
-        df = pd.DataFrame([
-            ],
-            columns=)
+#     def save_impression_data(self):
+#         """save data to csv [impression()]
+#         """
+#         df = pd.DataFrame([
+#             ],
+#             columns=)
 
 
-# insta = InstaDiscover(searching_account="smasell_jp")
-# print(insta.collect_tags())
+insta = InstaDiscover(target="zozotown")
+print(insta.collect_tags())
 
-insight = InsightMain()
-insight.impression()
+# insight = InsightMain()
+# insight.impression()
 
 # for i, data in enumerate(insta.data):
 #     print(int(insta.data[i]["like_count"]))

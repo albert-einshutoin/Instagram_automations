@@ -20,7 +20,14 @@ main action is collecting data from official API for your instagram marketing
 
 ## Usage
 Get instagram API's access token and key, if you want to use instagram_api
-[generate long lived token](https://www.youtube.com/watch?v=S-0Tp4_x9Z0)
+ [generate long lived token](https://www.youtube.com/watch?v=S-0Tp4_x9Z0)
+
+create settings.py file on instagram_api directory and wirte token and key
+you can run code and get data like below
+```
+insta = InstaDiscover()
+insta.save_info_to_csv()
+```
 ## Install
 ```
 pip install pandas
