@@ -13,16 +13,20 @@ main action is collecting data from official API for your instagram marketing
 - selenium_automaiton
 
 	:x::x:check follow instagram guideline:x::x:
+
 	you can like posts and get follower's list from targeted account
-## VS.
 
 ## Requirement
 
 ## Usage
-
+Get instagram API's access token and key, if you want to use instagram_api
+[generate long lived token](https://www.youtube.com/watch?v=S-0Tp4_x9Z0)
 ## Install
-
-## Contribution
+```
+pip install pandas
+pip install selenium
+pip install webdriver_manager
+```
 
 ## Licence
 
