@@ -156,21 +156,6 @@ class InstaInsight(object):
         return result
 
 
-class DiscoverMain(InstaDiscover):
-
-    def looping_accountlist(self, accounts: list = st.ACCOUNT_LIST):
-        """looping main work to each account from account list(settings.py)
-        Args:
-            accounts: compatitor's instagram account list.
-        Returns:
-            result data file for each researched account.
-        """
-        for account in accounts:
-            print(accout)
-            self.save_info_to_csv(searching_account=account)
-            self.collect_tags()
-
-
 class InsightMain(InstaInsight):
 
     def __init__(self):
