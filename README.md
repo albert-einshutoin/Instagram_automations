@@ -12,9 +12,8 @@ main action is collecting data from official API for your instagram marketing
 	possible to get like count, follower/follow number, madia data and data related to impression about your account
 - selenium_automaiton
 
-	:x::x:check follow instagram guideline:x::x:
-
-	you can like posts and get follower's list from targeted account
+check follow instagram guideline
+you can like posts and get follower's list from targeted account
 
 ## Requirement
 
