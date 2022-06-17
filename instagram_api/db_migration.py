@@ -6,84 +6,84 @@ import settings as st
 TABLES = {}
 
 TABLES['user'] = (
-        "CREATE TABLE 'user'(\
-             'id' int(4) NOT NULL AUTO_INCREMENT,\
-             'user_id' int(4) NOT NULL,\
-             'username' char(30) NOT NULL,\
-             PRIMARY KEY ('user_id')\
-             )" ENGINE=InnoBD)
+        "CREATE TABLE 'user'("
+        "    'id' int(4) NOT NULL AUTO_INCREMENT,"
+        "    'user_id' int(4) NOT NULL,"
+        "    'username' char(30) NOT NULL,"
+        "    PRIMARY KEY ('user_id')"
+        "    ) ENGINE=InnoBD")
 
 TABLES['user_info'] = (
-        "CREATE TABLE 'user_info'(\
-             'user_id' int(4) NOT NULL,\
-             'follower' int(4) NOT NULL,\
-             'following' int(4) NOT NULL,\
-             'media_count' int(4) NOT NULL,\
-             'counted_time' date NOT NULL,\
-             PRIMARY KEY ('user_id') KEY ('user_id'),\
-              REFERENCES 'user' ('user_id') ON DELETE CASCADE\
-             )" ENGINE=InnoBD)
+        "CREATE TABLE 'user_info'("
+        "    'user_id' int(4) NOT NULL,"
+        "    'follower' int(4) NOT NULL,"
+        "    'following' int(4) NOT NULL,"
+        "    'media_count' int(4) NOT NULL,"
+        "    'counted_time' date NOT NULL,"
+        "    PRIMARY KEY ('user_id') KEY ('user_id'),"
+        "     REFERENCES 'user' ('user_id') ON DELETE CASCADE"
+        "    ) ENGINE=InnoBD")
 
 TABLES['post_info'] = (
-        "CREATE TABLE 'pot_info'(\
-             'user_id' int(4) NOT NULL,\
-             'post_id' int(4) NOT NULL,\
-             'comments_count' int(4) NOT NULL,\
-             'caption' varchar(max) NOT NULL,\
-             'posted_time' date NOT NULL,\
-             PRIMARY KEY ('user_id', 'post_id'),\
-                    KEY ('user_id'),\
-             CONSTRAINT 'post_info_ibdk_1' FOREIGN KEY ('user_id'),\
-              REFERENCES 'user' ('user_id') ON DELETE CASCADE\
-             )" ENGINE=InnoBD)
+        "CREATE TABLE 'pot_info'("
+        "    'user_id' int(4) NOT NULL,"
+        "    'post_id' int(4) NOT NULL,"
+        "    'comments_count' int(4) NOT NULL,"
+        "    'caption' varchar(max) NOT NULL,"
+        "    'posted_time' date NOT NULL,"
+        "    PRIMARY KEY ('user_id', 'post_id'),"
+        "           KEY ('user_id'),"
+        "    CONSTRAINT 'post_info_ibdk_1' FOREIGN KEY ('user_id'),"
+        "     REFERENCES 'user' ('user_id') ON DELETE CASCADE"
+        "    ) ENGINE=InnoBD")
 
 TABLES['like_variation'] = (
-        "CREATE TABLE 'like_variation'(\
-             'post_id NOT NULL,\
-             'like_count' int(4) NOT NULL,\
-             'counted_time' date NOT NULL,\
-             PRIMARY KEY ('post_id'), KEY ('post_id'),\
-             CONSTRAINT 'tags_ibfk_1' FOREIGN KEY ('post_id'),\
-              REFERENCES 'post_info' ('post_id') ON DELETE CASCADE\
-              )" ENGINE=InnoBD)
+        "CREATE TABLE 'like_variation'("
+        "   'post_id NOT NULL,"
+        "    'like_count' int(4) NOT NULL,"
+        "    'counted_time' date NOT NULL,"
+        "    PRIMARY KEY ('post_id'), KEY ('post_id'),"
+        "    CONSTRAINT 'tags_ibfk_1' FOREIGN KEY ('post_id'),"
+        "     REFERENCES 'post_info' ('post_id') ON DELETE CASCADE"
+        "     ) ENGINE=InnoBD")
 
 TABLES['tags'] = (
-        "CREATE TABLE 'tags'(\
-             'post_id' NOT NULL,\
-             'tag_1' varchar(600) DEFAULT NULL,\
-             'tag_2' varchar(600) DEFAULT NULL,\
-             'tag_3' varchar(600) DEFAULT NULL,\
-             'tag_4' varchar(600) DEFAULT NULL,\
-             'tag_5' varchar(600) DEFAULT NULL,\
-             'tag_6' varchar(600) DEFAULT NULL,\
-             'tag_7' varchar(600) DEFAULT NULL,\
-             'tag_8' varchar(600) DEFAULT NULL,\
-             'tag_9' varchar(600) DEFAULT NULL,\
-             'tag_10' varchar(600) DEFAULT NULL,\
-             'tag_11' varchar(600) DEFAULT NULL,\
-             'tag_12' varchar(600) DEFAULT NULL,\
-             'tag_13' varchar(600) DEFAULT NULL,\
-             'tag_14' varchar(600) DEFAULT NULL,\
-             'tag_15' varchar(600) DEFAULT NULL,\
-             'tag_16' varchar(600) DEFAULT NULL,\
-             'tag_17' varchar(600) DEFAULT NULL,\
-             'tag_18' varchar(600) DEFAULT NULL,\
-             'tag_19' varchar(600) DEFAULT NULL,\
-             'tag_20' varchar(600) DEFAULT NULL,\
-             'tag_21' varchar(600) DEFAULT NULL,\
-             'tag_22' varchar(600) DEFAULT NULL,\
-             'tag_23' varchar(600) DEFAULT NULL,\
-             'tag_24' varchar(600) DEFAULT NULL,\
-             'tag_25' varchar(600) DEFAULT NULL,\
-             'tag_26' varchar(600) DEFAULT NULL,\
-             'tag_27' varchar(600) DEFAULT NULL,\
-             'tag_28' varchar(600) DEFAULT NULL,\
-             'tag_29' varchar(600) DEFAULT NULL,\
-             'tag_30' varchar(600) DEFAULT NULL,\
-             PRIMARY KEY ('post_id'), KEY ('post_id'),\
-             CONSTRAINT 'tags_ibfk_1' FOREIGN KEY ('post_id'),\
-              REFERENCES 'post_info' ('post_id') ON DELETE CASCADE\
-             )" ENGINE=InnoBD)
+        "CREATE TABLE 'tags'("
+        "    'post_id' NOT NULL,"
+        "    'tag_1' varchar(600) DEFAULT NULL,"
+        "    'tag_2' varchar(600) DEFAULT NULL,"
+        "    'tag_3' varchar(600) DEFAULT NULL,"
+        "    'tag_4' varchar(600) DEFAULT NULL,"
+        "    'tag_5' varchar(600) DEFAULT NULL,"
+        "    'tag_6' varchar(600) DEFAULT NULL,"
+        "    'tag_7' varchar(600) DEFAULT NULL,"
+        "    'tag_8' varchar(600) DEFAULT NULL,"
+        "    'tag_9' varchar(600) DEFAULT NULL,"
+        "    'tag_10' varchar(600) DEFAULT NULL,"
+        "    'tag_11' varchar(600) DEFAULT NULL,"
+        "    'tag_12' varchar(600) DEFAULT NULL,"
+        "    'tag_13' varchar(600) DEFAULT NULL,"
+        "    'tag_14' varchar(600) DEFAULT NULL,"
+        "    'tag_15' varchar(600) DEFAULT NULL,"
+        "    'tag_16' varchar(600) DEFAULT NULL,"
+        "    'tag_17' varchar(600) DEFAULT NULL,"
+        "    'tag_18' varchar(600) DEFAULT NULL,"
+        "    'tag_19' varchar(600) DEFAULT NULL,"
+        "    'tag_20' varchar(600) DEFAULT NULL,"
+        "    'tag_21' varchar(600) DEFAULT NULL,"
+        "    'tag_22' varchar(600) DEFAULT NULL,"
+        "    'tag_23' varchar(600) DEFAULT NULL,"
+        "    'tag_24' varchar(600) DEFAULT NULL,"
+        "    'tag_25' varchar(600) DEFAULT NULL,"
+        "    'tag_26' varchar(600) DEFAULT NULL,"
+        "    'tag_27' varchar(600) DEFAULT NULL,"
+        "    'tag_28' varchar(600) DEFAULT NULL,"
+        "    'tag_29' varchar(600) DEFAULT NULL,"
+        "    'tag_30' varchar(600) DEFAULT NULL,"
+        "    PRIMARY KEY ('post_id'), KEY ('post_id'),"
+        "    CONSTRAINT 'tags_ibfk_1' FOREIGN KEY ('post_id'),"
+        "     REFERENCES 'post_info' ('post_id') ON DELETE CASCADE"
+        "    ) ENGINE=InnoBD")
 
 
 class DatabaseMigrate(object):
