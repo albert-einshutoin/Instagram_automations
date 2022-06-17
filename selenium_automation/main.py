@@ -19,6 +19,8 @@ import logging
 
 import settings as st
 
+logger = logging.getLogger(__name__)
+
 
 class Scraping(object):
 
@@ -58,6 +60,7 @@ class Scraping(object):
     def login(self):
         """Login to instagram account
         """
+        logger.info('start login')
         self.driver.get("https://www.instagram.com")
         sleep(3)
 

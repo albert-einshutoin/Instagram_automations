@@ -3,3 +3,4 @@ selenium_automation/settings.py
 *.csv
 /data
 /viwer
+*.ipynb

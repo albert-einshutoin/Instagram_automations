@@ -5,6 +5,7 @@ import re
 import requests
 import sys
 import sqlite3
+import mysql.connector
 import time as t
 
 import settings as st
@@ -15,10 +16,10 @@ import pandas as pd
 class InstaDiscover(object):
 
     def __init__(self, target=None):
-        """First, connect to api to get basic info
+        """Connect to api to get basic info, using connect_api func
         """
         self.target = str(target)
-        self.DATABASE = ':memory:'
+        self.DATABASE = 'instagram'
         result = self.connect_api(target=target)
         self.username = st.username
         self.password = st.password
@@ -36,6 +37,8 @@ class InstaDiscover(object):
             target (str): target account
         Returnes:
             result (dictionary): api result
+
+        Todo: make argument to see next page data
         """
         searching_list = "{follows_count,followers_count,media_count,media\
                          {comments_count,like_count,timestamp,id,caption}}"
@@ -79,8 +82,8 @@ class InstaDiscover(object):
                          'Like_count', 'Caption',
                          'Posted_time']
                 )
-            df.to_csv(f'{target}_instagram_api_result.csv',
-                      mode='a', index=False, header=False)
+            df.to_csv(f'{self.target}_instagram_api_result.csv',
+                      mode='a', index=False)
 
     def save_tags_to_csv(self, target=None):
         """saving tags to csv
@@ -92,20 +95,11 @@ class InstaDiscover(object):
             df = pd.DataFrame(tags[i], columns=['tag'])
             df.to_csv(f'{self.data[i]["id"]}_tags', index=False)
 
-    def create_db_table(self):
-        conn = sqlite3.connect(self.DATABASE)
-        sql = 'CERATE TABLE IF NOT EXISTS api_results\
-        (id INTEGER PRIMARY KEY,\
-         researched_time TEXT,\
-         follower NUMERIC,\
-         post_id TEXT,\
-         like_count NUMERIC,\
-         caption TEXT,\
-         posted_time TEXT,\
-         tags TEXT)'
-        conn.execute(sql)
-        conn.commit()
-        conn.close
+    def create_user_info_table(self):
+        conn = MySQLdb.connect(self.DATABASE)
+        sql = f'CERATE TABLE IF NOT EXISTS user_info\
+                (id INTEGER PRIMMARY KEY,\
+                '
 
     def save_info_to_db(self):
         """
@@ -113,7 +107,7 @@ class InstaDiscover(object):
         todo: connect db first and make data None if the caption is duplicated
         """
         tags = self.collect_tags()
-        sql = f'INSERT INTO api_results VALUES({self.researched_time},\
+        sql = f'INSERT INTO {self.target}_api_results VALUES({self.researched_time},\
               {self.follower}, {self.data[i]["id"]},\
               {self.data[i]["like_count"]}, {self.data[i]["caption"]},\
               {self.data[i]["timestamp"]}, {tags[i]})'
@@ -121,16 +115,6 @@ class InstaDiscover(object):
         with conn:
             for i in range(len(tags)):
                 conn.execute(sql)
-
-#     def read_db_info(self):
-#         """
-#         connect db to check if post's info already exists
-#         """
-#         db = sqlite3.connect(self.DATABASE)
-#         c = db.cursor()
-#         sql = f'SELECT {self.data[i]["id"]} FROM {target + }'
-#         c.execute(sql)
-#         db.close()
 
 
 class InstaInsight(object):
@@ -195,7 +179,7 @@ class InsightMain(InstaInsight):
 
 
 insta = InstaDiscover(target="zozotown")
-print(insta.collect_tags())
+insta.save_info_to_csv()
 
 # insight = InsightMain()
 # insight.impression()
