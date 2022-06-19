@@ -9,8 +9,8 @@ TABLES['user'] = (
         "CREATE TABLE `user` (\
                 `id` bigint UNSIGNED NOT NULL,\
                 `username` char(30) NOT NULL,\
-                PRIMARY KEY (`id`))\
-                ")
+                PRIMARY KEY (`id`)\
+                )")
 
 TABLES['user_info'] = (
         "CREATE TABLE `user_info` (\
@@ -18,8 +18,9 @@ TABLES['user_info'] = (
                 `follower` int(11) UNSIGNED NOT NULL,\
                 `following` int(11) UNSIGNED NOT NULL,\
                 `media_count` int(11) UNSIGNED NOT NULL,\
-                `counted_time` date NOT NULL,\
+                `counted_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,\
                 PRIMARY KEY (`user_id`),\
+                KEY (`user_id`),\
                 CONSTRAINT `user_info_ibfk_1` FOREIGN KEY (`user_id`)\
                 REFERENCES `user`(`id`) ON DELETE CASCADE\
                 )")
@@ -30,7 +31,7 @@ TABLES['post_info'] = (
                 `user_id` bigint UNSIGNED NOT NULL,\
                 `comments_count` int(11) UNSIGNED NOT NULL,\
                 `caption` TEXT NOT NULL,\
-                `posted_time` date NOT NULL,\
+                `posted_time` datetime NOT NULL,\
                 PRIMARY KEY (`post_id`, `user_id`),\
                 KEY (`user_id`),\
                 CONSTRAINT `post_info_ibfk_1` FOREIGN KEY (`user_id`)\
@@ -41,7 +42,7 @@ TABLES['like_variation'] = (
         "CREATE TABLE `like_variation` (\
                 `post_id` bigint UNSIGNED NOT NULL,\
                 `like_count` int(4) UNSIGNED NOT NULL,\
-                `counted_time` date NOT NULL,\
+                `counted_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,\
                 PRIMARY KEY (`post_id`),\
                 KEY (`post_id`),\
                 CONSTRAINT `like_variation_ibfk_1` FOREIGN KEY (`post_id`)\
@@ -102,7 +103,7 @@ class DatabaseMigrate(object):
         """
         try:
             self.cursor.execute(
-                f"CREATE DATABASE {st.DB_NAME} DEFAULT CHARACTER SET 'utf8'")
+                f"CREATE DATABASE {st.DB_NAME} DEFAULT CHARACTER SET 'utf8mb4'")
         except mysql.connector.Error as err:
             print(f"Failed creating database: {err}")
             exit(1)
