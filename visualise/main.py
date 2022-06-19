@@ -8,7 +8,18 @@ class Visualise(object):
         self.target = target
 
     def get_hashtags(self):
-        df = pd.read_csv('')
+        """
+        """
+        cnx = mysql.connector.connect(user=st.DB_USER,
+                                      password=st.DB_PASS,
+                                      host='127.0.0.1',
+                                      database=st.DB_NAME)
+        cursor = cnx.cursor()
+        cursor.execute('SELECT * from tags where post_id=')
+
+        cnx.commit()
+        cursor.close()
+        cnx.close()
         return hashtags
 
     def liked_growth(self):
