@@ -7,6 +7,7 @@ import sys
 import sqlite3
 import mysql.connector
 import time as t
+import datetime
 
 import settings as st
 
@@ -53,7 +54,7 @@ class InstaDiscover(object):
     def collect_tags(self):
         """split tag from post's caption
         Returns:
-            lists (list): hashtag list for each post
+            lists (list): hashtag list's list (doubled list)
         """
         lists = []
         pattern = '#.*?(.*?)\s'
@@ -74,14 +75,96 @@ class InstaDiscover(object):
                                       host='127.0.0.1',
                                       database=st.DB_NAME)
         cursor = cnx.cursor()
-        add_user = ("INSERT INTO user"
-                    "(id, username) VALUES (%(id)s, %(username)s)")
+#        cursor.execute(f'INSERT INTO user (id, username) VALUES ({self.id}, "{self.target}")')
+        add_user = ('INSERT INTO user'
+                    '(id, username) VALUES (%(id)s, %(username)s)')
         data_user = {
                 'id': self.id,
                 'username': self.target
                 }
         cursor.execute(add_user, data_user)
         cnx.commit()
+        cursor.close()
+        cnx.close()
+
+    def save_user_info_table(self):
+        """
+        """
+        cnx = mysql.connector.connect(user=st.DB_USER,
+                                      password=st.DB_PASS,
+                                      host='127.0.0.1',
+                                      database=st.DB_NAME)
+        cursor = cnx.cursor()
+        add_user_info = (
+                'INSERT INTO user_info'
+                '(user_id, follower, following, media_count)'
+                'VALUES (%(user_id)s, %(follower)s,\
+                        %(following)s, %(media_count)s)'
+                )
+        data_user_info = {
+                'user_id': self.id,
+                'follower': self.follower,
+                'following': self.follow,
+                'media_count': self.media_count,
+                }
+        cursor.execute(add_user_info, data_user_info)
+        cnx.commit()
+        cursor.close()
+        cnx.close()
+
+    def save_post_info_table(self):
+        """
+        """
+        cnx = mysql.connector.connect(user=st.DB_USER,
+                                      password=st.DB_PASS,
+                                      host='127.0.0.1',
+                                      database=st.DB_NAME)
+        cursor = cnx.cursor()
+        add_post_info = (
+                'INSERT INTO post_info'
+                '(post_id, user_id, comments_count, caption, posted_time)'
+                'VALUES (%(post_id)s, %(user_id)s, %(comments_count)s,\
+                        %(caption)s, %(posted_time)s)'
+                )
+        for i in range(len(self.data)):
+            # iso8601 -> datetime
+            utc9 = self.data[i]["timestamp"].replace('+0000', '+09:00')
+            timestamp = datetime.datetime.fromisoformat(utc9)
+            data_post_info = {
+                    'post_id': self.data[i]["id"],
+                    'user_id': self.id,
+                    'comments_count': self.data[i]["comments_count"],
+                    'caption': self.data[i]["caption"],
+                    'posted_time': timestamp
+                    }
+            cursor.execute(add_post_info, data_post_info)
+            cnx.commit()
+        cursor.close()
+        cnx.close()
+
+    def save_tags_table(self):
+        """
+        """
+        cnx = mysql.connector.connect(user=st.DB_USER,
+                                      password=st.DB_PASS,
+                                      host='127.0.0.1',
+                                      database=st.DB_NAME)
+        cursor = cnx.cursor()
+        tags = self.collect_tags()
+        for i, tag_list in enumerate(tags):
+            # looping tag list's list
+            tags_len = range(len(tag_list))
+            tag_set = ['tag_' + str(i+1) for i in tags_len]
+            linked_tag_set = ', '.join(tag_set)
+            tag_val = ['"' + tag_list[i] + '"' for i in tags_len]
+            linked_tag_val = ', '.join(tag_val)
+            cursor.execute(f'INSERT INTO tags (post_id, {linked_tag_set})'
+                           f'VALUES ({self.data[i]["id"]}, {linked_tag_val})')
+#            add_tags = (
+#                    "INSERT INTO tags"
+#                    f'({tag_set}) VALUES ({tag_val})'
+#                    )
+            cnx.commit()
         cursor.close()
         cnx.close()
 
@@ -112,6 +195,8 @@ class InstaDiscover(object):
             df.to_csv(f'{self.data[i]["id"]}_tags', index=False)
 
 
-insta = InstaDiscover(target="sharedanshi")
-insta.save_user_table()
-
+insta = InstaDiscover(target="nailwalea")
+# insta.save_user_table()
+# insta.save_user_info_table()
+# insta.save_post_info_table()
+insta.save_tags_table()
