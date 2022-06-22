@@ -69,6 +69,7 @@ class InstaDiscover(object):
 
     def save_user_table(self):
         """
+        Returns:
         """
         cnx = mysql.connector.connect(user=st.DB_USER,
                                       password=st.DB_PASS,
@@ -89,6 +90,7 @@ class InstaDiscover(object):
 
     def save_user_info_table(self):
         """
+        Returns:
         """
         cnx = mysql.connector.connect(user=st.DB_USER,
                                       password=st.DB_PASS,
@@ -114,6 +116,7 @@ class InstaDiscover(object):
 
     def save_post_info_table(self):
         """
+        Returns:
         """
         cnx = mysql.connector.connect(user=st.DB_USER,
                                       password=st.DB_PASS,
@@ -144,6 +147,7 @@ class InstaDiscover(object):
 
     def save_tags_table(self):
         """
+        Returns:
         """
         cnx = mysql.connector.connect(user=st.DB_USER,
                                       password=st.DB_PASS,
@@ -154,6 +158,9 @@ class InstaDiscover(object):
         for i, tag_list in enumerate(tags):
             # looping tag list's list
             tags_len = range(len(tag_list))
+            # erase unactive hashtag over 30
+            if len(tag_list) >= 30:
+                tags_len = range(29)
             tag_set = ['tag_' + str(i+1) for i in tags_len]
             linked_tag_set = ', '.join(tag_set)
             tag_val = ['"' + tag_list[i] + '"' for i in tags_len]
@@ -168,8 +175,36 @@ class InstaDiscover(object):
         cursor.close()
         cnx.close()
 
+    def save_like_variation(self):
+        """
+        Returns:
+        """
+        cnx = mysql.connector.connect(user=st.DB_USER,
+                                      password=st.DB_PASS,
+                                      host='127.0.0.1',
+                                      database=st.DB_NAME)
+        cursor = cnx.cursor()
+        cursor.execute(f'SELECT id from user where username="{self.target}"')
+        result = cursor.fetchone()
+        user_id = result[0]
+        cursor.execute(f'SELECT post_id from post_info where user_id={user_id}')
+        result = cursor.fetchall()
+        add_like_variation = (
+                'INSERT INTO like_variation (post_id, like_count)'
+                'VALUES (%(post_id)s, %(like_count)s)')
+        for i, post_id in enumerate(result):
+            data_like_variation = {
+                    'post_id': post_id[0],
+                    'like_count': self.data[i]["like_count"]
+                    }
+            cursor.execute(add_like_variation, data_like_variation)
+            cnx.commit()
+        cursor.close()
+        cnx.close()
+
     def save_info_to_csv(self, target=None):
         """all data save into csv file except tags for coverting to list easily
+        Returns:
         """
         for i in range(len(self.data)):
             df = pd.DataFrame([
@@ -186,6 +221,7 @@ class InstaDiscover(object):
 
     def save_tags_to_csv(self, target=None):
         """saving tags to csv
+        Returns:
         """
         path = f'data/{target}/tags'
         os.makedirs(path, exist_ok=True)
@@ -195,8 +231,9 @@ class InstaDiscover(object):
             df.to_csv(f'{self.data[i]["id"]}_tags', index=False)
 
 
-insta = InstaDiscover(target="nailwalea")
+insta = InstaDiscover(target="sharedanshi")
 # insta.save_user_table()
 # insta.save_user_info_table()
 # insta.save_post_info_table()
+# insta.save_like_variation()
 insta.save_tags_table()
