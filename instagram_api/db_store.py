@@ -19,7 +19,6 @@ TABLES['user_info'] = (
                 `following` int(11) UNSIGNED NOT NULL,\
                 `media_count` int(11) UNSIGNED NOT NULL,\
                 `counted_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,\
-                PRIMARY KEY (`user_id`),\
                 KEY (`user_id`),\
                 CONSTRAINT `user_info_ibfk_1` FOREIGN KEY (`user_id`)\
                 REFERENCES `user`(`id`) ON DELETE CASCADE\
@@ -43,7 +42,6 @@ TABLES['like_variation'] = (
                 `post_id` bigint UNSIGNED NOT NULL,\
                 `like_count` int(4) UNSIGNED NOT NULL,\
                 `counted_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,\
-                PRIMARY KEY (`post_id`),\
                 KEY (`post_id`),\
                 CONSTRAINT `like_variation_ibfk_1` FOREIGN KEY (`post_id`)\
                 REFERENCES `post_info` (`post_id`) ON DELETE CASCADE\
