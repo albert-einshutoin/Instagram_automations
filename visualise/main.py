@@ -38,7 +38,13 @@ class Visualise(object):
                 user_id={self.user_id} order by posted_time desc')
         result = cursor.fetchall()
         posted_time = [result[i][0] for i in range(len(result))]
-        frecuency = [posted_time[i-1] - posted_time[i] for i in range(len(posted_time))]
+        frecuency = []
+        for i in range(len(posted_time)):
+            if i + 1 == len(posted_time):
+                break
+            else:
+                diff = abs(posted_time[i+1] - posted_time[i])
+                frecuency.append(diff)
         cursor.close()
         cnx.close()
         print(frecuency)
