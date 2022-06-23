@@ -51,19 +51,21 @@ class Visualise(object):
 
     def get_post_id(self):
         """
+        Returns:
+            list of taget's post_id
         """
         cnx = mysql.connector.connect(user=st.DB_USER,
                                       password=st.DB_PASS,
                                       host='127.0.0.1',
                                       database=st.DB_NAME)
         cursor = cnx.cursor()
-        cursor.execute('SELECT post_id from post_info where user_id="{self.user_id}"')
+        cursor.execute(f'SELECT post_id from post_info where user_id={self.user_id}')
         result = cursor.fetchall()
         cursor.close()
         cnx.close()
         return result
 
-    def get_liked_count(self):
+    def get_liked_count(self, post_id=None):
         """
         """
         cnx = mysql.connector.connect(user=st.DB_USER,
@@ -71,7 +73,53 @@ class Visualise(object):
                                       host='127.0.0.1',
                                       database=st.DB_NAME)
         cursor = cnx.cursor()
-        cursor.execute('SELECT post_id from post_info where user_id="{self.user_id}"')
+#        cursor.execute('SELECT post_id from post_info where user_id="{self.user_id}"')
+        cursor.execute(f'SELECT like_count, counted_time from like_variation\
+                        where post_id={post_id}')
+        result = cursor.fetchall()
+        Likes = []
+        Period = []
+        for i in cursor:
+            Likes.append(i[0])
+            Period.append(i[1])
+        cursor.close()
+        cnx.close()
+        plt.bar(Period, Likes)
+        plt.ylim(0, 100)
+#        ax = plt.subplots()
+        plt.xlabel("period of time")
+        plt.ylabel("liked fluctuation")
+        plt.show()
+
+    def liked_differences(self):
+        """
+        """
+        cnx = mysql.connector.connect(user=st.DB_USER,
+                                      password=st.DB_PASS,
+                                      host='127.0.0.1',
+                                      database=st.DB_NAME)
+        cursor = cnx.cursor()
+        cursor.execute('SELECT counted_time from like_variation\
+                        order by counted_time desc')
+        posted_time = cursor.fetchall()
+        latest = posted_time[0][0]
+        cursor.execute(f'SELECT post_id, like_count from like_variation\
+                        where counted_time="{latest}"')
+        result = cursor.fetchall()
+        Post_id = []
+        Likes = []
+        for i in result:
+            Post_id.append(i[0])
+            Likes.append(i[1])
+        cursor.close()
+        cnx.close()
+        print(Post_id)
+        print(Likes)
+        plt.bar(Post_id, Likes)
+        plt.xlabel("Post id")
+        plt.ylabel("Liked Count")
+        plt.title("like differences between post")
+        plt.show()
 
     def get_hashtags(self, post_id=None):
         """
@@ -87,8 +135,8 @@ class Visualise(object):
         cnx.close()
         return hashtags
 
-    def liked_growth(self):
-        file = open(f"{self.target}_api_results")
+    def show_liked_growth(self):
+        liked = self.get_liked_count()
         plt.plot()
         plt.xlabel("Data")
         plt.ylabel("Like_count")
@@ -101,5 +149,7 @@ class Visualise(object):
 
 vis = Visualise(target="sharedanshi")
 # vis.get_hashtags()
-vis.post_frecuency()
+# vis.get_post_id()
+# vis.get_liked_count(post_id=17845569053765967)
+vis.liked_differences()
 
